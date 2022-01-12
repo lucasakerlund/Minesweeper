@@ -17,6 +17,7 @@ public class Grid extends Pane {
     private Tile[][] grid;
 
     private int bombs = 99;
+    private boolean isGameOver = false;
 
     private int[] xOffsets = {1, 0, -1};
     private int[] yOffsets = {1, 0, -1};
@@ -104,9 +105,18 @@ public class Grid extends Pane {
     }
 
     private void exposeTile(Tile tile){
+        if(isGameOver){
+            return;
+        }
         if(!tile.isLocked()){
             tile.showTile();
         }
+
+        if(tile.isBomb()){
+            isGameOver = true;
+            gameOver();
+        }
+
         /*exposes all 9 tiles if center is 0*/
         if(tile.getNumber() == 0  && !tile.isBomb()){
             for(int xOffset = 0; xOffset < xOffsets.length; xOffset++) {
@@ -131,6 +141,16 @@ public class Grid extends Pane {
                     if(!grid[newX][newY].isLocked()){
                         grid[newX][newY].showTile();
                     }
+                }
+            }
+        }
+    }
+
+    private void gameOver(){
+        for(int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if(grid[x][y].isBomb()){
+                    grid[x][y].showTile();
                 }
             }
         }
