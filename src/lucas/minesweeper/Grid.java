@@ -76,23 +76,23 @@ public class Grid extends Pane {
         }
     }
 
-    private void calcNumber(int x, int y){//tar in koordinaten på den rutan som vi vill kalkylera numret på
-        int bombNeighbours = 0; //antal bomber som finns runt rutan.
-        for(int xOffset = 0; xOffset < xOffsets.length; xOffset++){ //loopar igenom alla "grannar" på x, se bild
-            for(int yOffset = 0; yOffset < yOffsets.length; yOffset++){ //loopar igenom alla "grannar" på y, se bild
-                if(xOffsets[xOffset] == 0 && yOffsets[yOffset] == 0){ //kollar så man inte räknar med rutan i mitten
+    private void calcNumber(int x, int y){
+        int bombNeighbours = 0;
+        for(int xOffset = 0; xOffset < xOffsets.length; xOffset++){
+            for(int yOffset = 0; yOffset < yOffsets.length; yOffset++){
+                if(xOffsets[xOffset] == 0 && yOffsets[yOffset] == 0){
                     continue;
                 }
                 if(x+xOffsets[xOffset] >= width || x+xOffsets[xOffset] < 0 || y+yOffsets[yOffset] >= height || y+yOffsets[yOffset] < 0){
-                    continue; //kollar så man håller sig innanför längden av griden/rutnätet
+                    continue;
                 }
-                if(grid[x+xOffsets[xOffset]][y+yOffsets[yOffset]].isBomb()){ //kollar om det är en bomb och isåfall ökar bombNeighbours
+                if(grid[x+xOffsets[xOffset]][y+yOffsets[yOffset]].isBomb()){
                     bombNeighbours++;
                 }
 
             }
         }
-        grid[x][y].setNumber(bombNeighbours); //sätter nummret till rutan.
+        grid[x][y].setNumber(bombNeighbours);
     }
 
     private void addTileListener(Tile tile) {
