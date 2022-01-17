@@ -1,5 +1,8 @@
 package lucas.minesweeper;
 
+import javafx.beans.Observable;
+import javafx.beans.value.ObservableIntegerValue;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 
@@ -16,16 +19,22 @@ public class Grid extends Pane {
 
     private Tile[][] grid;
 
-    private int bombs = 99;
+    private int bombs;
+    private int marks = 0;
     private boolean isGameOver = false;
 
     private int[] xOffsets = {1, 0, -1};
     private int[] yOffsets = {1, 0, -1};
 
-    public Grid(int width, int height) {
+    public Grid(int width, int height, int bombs) {
         this.width = width;
         this.height = height;
+        this.bombs = bombs;
         grid = new Tile[width][height];
+    }
+
+    public void reset(){
+        isGameOver = false;
     }
 
     public void generateContent(){
@@ -67,27 +76,30 @@ public class Grid extends Pane {
         }
     }
 
-    private void calcNumber(int x, int y){
-        int bombNeighbours = 0;
-        for(int xOffset = 0; xOffset < xOffsets.length; xOffset++){
-            for(int yOffset = 0; yOffset < yOffsets.length; yOffset++){
-                if(xOffsets[xOffset] == 0 && yOffsets[yOffset] == 0){
+    private void calcNumber(int x, int y){//tar in koordinaten på den rutan som vi vill kalkylera numret på
+        int bombNeighbours = 0; //antal bomber som finns runt rutan.
+        for(int xOffset = 0; xOffset < xOffsets.length; xOffset++){ //loopar igenom alla "grannar" på x, se bild
+            for(int yOffset = 0; yOffset < yOffsets.length; yOffset++){ //loopar igenom alla "grannar" på y, se bild
+                if(xOffsets[xOffset] == 0 && yOffsets[yOffset] == 0){ //kollar så man inte räknar med rutan i mitten
                     continue;
                 }
                 if(x+xOffsets[xOffset] >= width || x+xOffsets[xOffset] < 0 || y+yOffsets[yOffset] >= height || y+yOffsets[yOffset] < 0){
-                    continue;
+                    continue; //kollar så man håller sig innanför längden av griden/rutnätet
                 }
-                if(grid[x+xOffsets[xOffset]][y+yOffsets[yOffset]].isBomb()){
+                if(grid[x+xOffsets[xOffset]][y+yOffsets[yOffset]].isBomb()){ //kollar om det är en bomb och isåfall ökar bombNeighbours
                     bombNeighbours++;
                 }
 
             }
         }
-        grid[x][y].setNumber(bombNeighbours);
+        grid[x][y].setNumber(bombNeighbours); //sätter nummret till rutan.
     }
 
     private void addTileListener(Tile tile) {
         tile.setOnMousePressed(e -> {
+            if(isGameOver){
+                return;
+            }
             if(e.getButton() == MouseButton.PRIMARY) {
                 if(!tile.isLocked() && !tile.isExposed()){
                     exposeTile(tile);
@@ -96,18 +108,27 @@ public class Grid extends Pane {
                 if(tile.isLocked()){
                     tile.unlock();
                 }else{
-                    if(!tile.isExposed()){
+                    if(!tile.isExposed() && marks < Minesweeper.BOMBS){
                         tile.lock();
                     }
                 }
+                updateMarks();
             }
         });
     }
 
-    private void exposeTile(Tile tile){
-        if(isGameOver){
-            return;
+    private void updateMarks(){
+        int marks = 0;
+        for(int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                marks += grid[x][y].isLocked() ? 1 : 0;
+            }
         }
+        this.marks = marks;
+        Minesweeper.inst().getHeader().updateMarks(Minesweeper.BOMBS - marks);
+    }
+
+    private void exposeTile(Tile tile){
         if(!tile.isLocked()){
             tile.showTile();
         }
@@ -149,7 +170,7 @@ public class Grid extends Pane {
     private void gameOver(){
         for(int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                if(grid[x][y].isBomb()){
+                if(grid[x][y].isBomb() && !grid[x][y].isLocked()){
                     grid[x][y].showTile();
                 }
             }

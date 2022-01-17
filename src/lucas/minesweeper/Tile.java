@@ -131,7 +131,7 @@ public class Tile extends StackPane {
         rec.setFill(fill);
         rec.setStroke(stroke);
         rec.setStrokeWidth(1);
-        rec.setStrokeType(StrokeType.INSIDE);
+        rec.setStrokeType(StrokeType.CENTERED);
     }
 
 }
